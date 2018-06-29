@@ -1,0 +1,5 @@
+data/org.gnome.Shoppinglist.desktop.in
+data/org.gnome.Shoppinglist.appdata.xml.in
+data/org.gnome.Shoppinglist.gschema.xml
+src/window.uisrc/main.py
+src/window.py
