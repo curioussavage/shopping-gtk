@@ -40,19 +40,20 @@ def make_list_widget(data):
     row = Gtk.ListBoxRow()
     label = Gtk.Label(data.title)
     row.add(label)
+    row.show_all()
     return row
 
 
 def make_lists_widget(data):
     row = Gtk.ListBoxRow()
     label = Gtk.Label(data.name)
-    import ipdb; ipdb.set_trace()
     box = Gtk.Box(Gtk.Orientation.VERTICAL, spacing=100)
     box.pack_start(label, True, True, 0)
 
     row.connect('realize', lambda f: print('hello world'))
-    #row.add(box)
-    return box
+    row.add(box)
+    row.show_all()
+    return row
 
 
 @GtkTemplate(ui='/org/gnome/Shoppinglist/window.ui')
@@ -129,9 +130,12 @@ class DialogManager(object):
         self.dialog.connect('response', self.handle_response)
 
     def handle_response(self, dialog, resp):
+        print('handle response')
         if resp == Gtk.ResponseType.ACCEPT:
             input = self.dialog.get_child().get_children()[0].get_children()[2]
             name = input.get_text()
+
+            print(' name is ' + name)
             self.get_store().append(self.ItemClass(name))
             self.dialog.hide()
             input.set_text('')
