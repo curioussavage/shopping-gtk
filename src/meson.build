@@ -30,6 +30,9 @@ shoppinglist_sources = [
   'gi_composites.py',
   'main.py',
   'window.py',
+  'list_item.py',
+  'list.py',
+  'db.py',
 ]
 
 install_data(shoppinglist_sources, install_dir: moduledir)

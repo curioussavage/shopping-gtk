@@ -2,5 +2,7 @@
 <gresources>
   <gresource prefix="/org/gnome/Shoppinglist">
     <file>window.ui</file>
+    <file>list_item.ui</file>
+    <file>list.ui</file>
   </gresource>
 </gresources>

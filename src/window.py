@@ -15,18 +15,25 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import time
+
 from gi.repository import Gtk
 from gi.repository import Gio
+from gi.repository import GLib
 from gi.repository import GObject
 from .gi_composites import GtkTemplate
 
-import time
+from .list_item import ListItem as ListItemWidget
+from .list import List as ListWidget
+
+from .db import DB
 
 
 class ListItem(GObject.GObject):
-    def __init__(self, title):
+    def __init__(self, title, checked=None):
         GObject.GObject.__init__(self)
         self.title = title
+        self.checked = checked
 
 
 class ShoppingList(GObject.GObject):
@@ -37,29 +44,20 @@ class ShoppingList(GObject.GObject):
 
 
 def make_list_widget(data):
-    row = Gtk.ListBoxRow()
-    label = Gtk.Label(data.title)
-    row.add(label)
-    row.show_all()
-    return row
+    return ListItemWidget(data)
 
 
 def make_lists_widget(data):
-    row = Gtk.ListBoxRow()
-    label = Gtk.Label(data.name)
-    box = Gtk.Box(Gtk.Orientation.VERTICAL, spacing=100)
-    box.pack_start(label, True, True, 0)
-
-    row.connect('realize', lambda f: print('hello world'))
-    row.add(box)
-    row.show_all()
-    return row
+    return ListWidget(data)
 
 
 @GtkTemplate(ui='/org/gnome/Shoppinglist/window.ui')
 class ShoppinglistWindow(Gtk.ApplicationWindow):
     __gtype_name__ = 'ShoppinglistWindow'
 
+    db = DB()
+
+    # TODO use flatpak cli tool to gnereate module for tinydb
     shoppinglist = GtkTemplate.Child()
     lists_listbox = GtkTemplate.Child()
 
@@ -90,14 +88,39 @@ class ShoppinglistWindow(Gtk.ApplicationWindow):
 
         self.new_item_button.connect('clicked', self.on_new_item)
 
-        self.dialog_manager = DialogManager(lambda: self.lists_store, self.newlist_dialog, ShoppingList)
-        self.shopping_list_dialog_manager = DialogManager(self.get_slist_store, self.new_item_dialog, ListItem)
+        self.newlist_dialog.connect('response', self.handle_list_dialog_res)
+        self.new_item_dialog.connect('response', self.handle_item_dialog_res)
+
+    def handle_list_dialog_res(self, dialog, resp):
+        if resp == Gtk.ResponseType.ACCEPT:
+            input = self.newlist_dialog.get_child().get_children()[0].get_children()[2]
+            name = input.get_text()
+
+            self.lists_store.append(ShoppingList(name))
+            self.newlist_dialog.hide()
+            input.set_text('')
+        else:
+            self.newlist_dialog.hide()
+
+
+    def handle_item_dialog_res(self, dialog, resp):
+        if resp == Gtk.ResponseType.ACCEPT:
+            input = self.new_item_dialog.get_child().get_children()[0].get_children()[2]
+            name = input.get_text()
+
+            self.get_slist_store().append(ListItem(name))
+            self.new_item_dialog.hide()
+            input.set_text('')
+        else:
+            self.new_item_dialog.hide()
 
     def get_slist_store(self):
         sel_row = self.lists_listbox.get_selected_row()
-        row_index = sel_row.get_index()
-        list = self.lists_store.get_item(row_index)
-        return list.items
+        if sel_row:
+            row_index = sel_row.get_index()
+            list = self.lists_store.get_item(row_index)
+            return list.items
+        return None
 
     def handle_list_selected(self, listbox, row):
         row_index = row.get_index()
@@ -108,36 +131,13 @@ class ShoppinglistWindow(Gtk.ApplicationWindow):
         self.new_item_dialog.run()
 
     def lists_listbox_handle_add(self, listModel, position, removed, added):
-        #import ipdb; ipdb.set_trace()
         row = self.lists_listbox.get_row_at_index(position)
         self.lists_listbox.select_row(row)
 
 
     def init_lists(self):
-        pass
+        self.lists_store.append(ShoppingList('test'))
 
     def on_new_list(self, btn):
         self.newlist_dialog.run()
 
-
-class DialogManager(object):
-    def __init__(self, get_store, dialog, ItemClass):
-        self.dialog = dialog
-        self.get_store = get_store
-        self.ItemClass = ItemClass
-
-        #import ipdb; ipdb.set_trace()
-        self.dialog.connect('response', self.handle_response)
-
-    def handle_response(self, dialog, resp):
-        print('handle response')
-        if resp == Gtk.ResponseType.ACCEPT:
-            input = self.dialog.get_child().get_children()[0].get_children()[2]
-            name = input.get_text()
-
-            print(' name is ' + name)
-            self.get_store().append(self.ItemClass(name))
-            self.dialog.hide()
-            input.set_text('')
-        else:
-            self.dialog.hide()
