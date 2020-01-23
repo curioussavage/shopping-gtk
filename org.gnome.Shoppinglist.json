@@ -1,7 +1,7 @@
 {
     "app-id" : "org.gnome.Shoppinglist",
     "runtime" : "org.gnome.Platform",
-    "runtime-version" : "3.28",
+    "runtime-version" : "3.34",
     "sdk" : "org.gnome.Sdk",
     "command" : "shoppinglist",
     "finish-args" : [
@@ -34,6 +34,21 @@
     ],
     "modules" : [
         {
+            "name": "libhandy",
+            "buildsystem": "meson",
+            "config-opts": [
+                "-Dtests=false",
+                "-Dexamples=false",
+                "-Dglade_catalog=disabled",
+                "-Dvapi=false"
+            ],
+            "sources": [{
+                "type": "git",
+                "url": "https://source.puri.sm/Librem5/libhandy.git",
+                "tag": "v0.0.13"
+            }]
+        },
+        {
             "name" : "shoppinglist",
             "buildsystem" : "meson",
             "config-opts" : [
@@ -43,7 +58,7 @@
             "sources" : [
                 {
                     "type" : "git",
-                    "url" : "file:///home/awinn/projects/shoppinglist"
+                    "url" : "file:///home/awinn/projects/shopping-gtk"
                 }
             ]
         }
