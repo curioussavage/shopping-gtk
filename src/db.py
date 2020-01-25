@@ -1,7 +1,8 @@
 from os import path
 
-#from tinydb import TinyDB, Query
 from gi.repository import GLib
+
+import sqlite3
 
 
 class ListModel():
@@ -10,49 +11,46 @@ class ListModel():
    # sections = [<name>]
    # items = []
 
-
-def add_item_op(item):
-     def transform(doc):
-         # do something with the document
-         import ipdb; ipdb.set_trace()
-     return transform
-
-def toggle_checked_op(item_name, checked):
-     def transform(doc):
-         # do something with the document
-         import ipdb; ipdb.set_trace()
-     return transform
-
-def toggle_checked_op(section_name):
-     def transform(doc):
-         # do something with the document
-         import ipdb; ipdb.set_trace()
-     return transform
-
 class DB():
+    def create_tables(self):
+        self.cursor.execute("""CREATE TABLE IF NOT EXISTS list_items (
+            id   INTEGER PRIMARY KEY,
+            list_id INTEGER,
+            title  VARCHAR(255) NOT NULL,
+            done INTEGER,
+            FOREIGN KEY (list_id) REFERENCES lists (id)
+           )"""
+        )
+
+        self.cursor.execute("""CREATE TABLE IF NOT EXISTS lists (
+            id   INTEGER PRIMARY KEY,
+            name TEXT
+           )"""
+        )
+
     def __init__(self):
-        pass
-        # dir = GLib.get_user_data_dir()
-        # db_path = path.join(dir, 'db.json')
-        # self.db = TinyDB(db_path)
+        dir = GLib.get_user_data_dir()
+        db_path = path.join(dir, 'app.db')
+        print('hello world')
+        # might need to create db if not there
+        conn = sqlite3.connect(db_path)
+        self.cursor = conn.cursor()
+
+        # Create table
+        self.create_tables()
 
     def create(self, list):
         db.insert(list)
 
     def add_item(self, item, list_name):
-        row = Query()
-        self.db.update(add_item_op(item), row.name == list_name)
-        return True
+        pass
 
     def toggle_checked(self, item_name, list_name, checked):
-        row = Query()
-        self.db.update(toggle_checked_op(item_name, checked), row.name == list_name)
+        pass
 
     def add_section(self, list_name, section_name):
-        row = Query()
-        self.db.update(add_section_op(section_name), row.name == list_name)
+        pass
 
     def get_list(self, name):
-        row = Query()
-        return self.db.search(row.name == name)
+        pass
 

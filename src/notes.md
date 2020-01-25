@@ -34,3 +34,7 @@ public class MyListStore : GLib.ListStore {
 }
 ```
 None of that is tested, just off the top of my head, so sorry if it doesn't quite work but it should get you closer.
+
+
+## other notes
+

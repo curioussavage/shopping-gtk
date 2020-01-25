@@ -73,6 +73,7 @@ class ShoppinglistWindow(Gtk.ApplicationWindow):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.init_template()
+        print('starting up app')
 
         self.init_lists()
 
