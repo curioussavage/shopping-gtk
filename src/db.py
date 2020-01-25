@@ -3,6 +3,7 @@ from os import path
 from gi.repository import GLib
 
 import sqlite3
+from uuid import uuid4
 
 
 class ListModel():
@@ -13,20 +14,30 @@ class ListModel():
 
 class DB():
     def create_tables(self):
+        # We use uuid for primary key since I want to sync with remote server
         self.cursor.execute("""CREATE TABLE IF NOT EXISTS list_items (
-            id   INTEGER PRIMARY KEY,
+            id   TEXT,
             list_id INTEGER,
             title  VARCHAR(255) NOT NULL,
             done INTEGER,
-            FOREIGN KEY (list_id) REFERENCES lists (id)
+            category_id TEXT,
+            FOREIGN KEY (list_id) REFERENCES lists (id),
+            FOREIGN KEY (category) REFERENCES categories (id)
            )"""
         )
 
         self.cursor.execute("""CREATE TABLE IF NOT EXISTS lists (
-            id   INTEGER PRIMARY KEY,
+            id   TEXT,
             name TEXT
            )"""
         )
+        res = self.cursor.execute("""CREATE TABLE IF NOT EXISTS categories (
+            id TEXT,
+            name TEXT,
+            list_id TEXT,
+            FOREIGN KEY (list_id) REFERENCES lists (id)
+            )""")
+        print('res from categories is: ', res)
 
     def __init__(self):
         dir = GLib.get_user_data_dir()
@@ -39,17 +50,30 @@ class DB():
         # Create table
         self.create_tables()
 
-    def create(self, list):
-        db.insert(list)
+    def add_list(self, name):
+        item_id = uuid4()
+        res = self.cursor.execute("""INSERT INTO lists (id, name) values (?, ?)""", (item_id, name))
+        self.add_category(item_id, 'default')
 
-    def add_item(self, item, list_name):
-        pass
+    def add_item(self, list_id, category_id, title):
+        item_id = uuid4()
+        res = self.cursor.execute(
+        """INSERT INTO list_items (id, list_id, category_id, title, done)
+           values (?, ?, ?, ?)
+        """, (item_id, list_id, category_id, title, False))
+        # check res
 
-    def toggle_checked(self, item_name, list_name, checked):
-        pass
+    def toggle_checked(self, item_id, done):
+        res = self.cursor.execute(
+        """UPDATE list_items  SET done=? WHERE item_id=?
+        """, (done, item_id))
 
-    def add_section(self, list_name, section_name):
-        pass
+    def add_category(self, list_id, name):
+        item_id = uuid4()
+        res = self.cursor.execute(
+        """INSERT INTO categories (id, list_id, name)
+           values (?, ?, ?, ?)
+        """, (item_id, list_id, name))
 
     def get_list(self, name):
         pass
