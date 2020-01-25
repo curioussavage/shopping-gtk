@@ -43,7 +43,7 @@
             "sources" : [
                 {
                     "type" : "git",
-                    "url" : "file:///home/awinn/projects/shoppinglist"
+                    "url" : "file:///home/awinn/projects/shopping-gtk"
                 }
             ]
         }

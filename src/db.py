@@ -31,7 +31,7 @@ class DB():
     def __init__(self):
         dir = GLib.get_user_data_dir()
         db_path = path.join(dir, 'app.db')
-        print('hello world')
+        print('db path is ', db_path)
         # might need to create db if not there
         conn = sqlite3.connect(db_path)
         self.cursor = conn.cursor()
