@@ -17,12 +17,12 @@ class DB():
         # We use uuid for primary key since I want to sync with remote server
         self.cursor.execute("""CREATE TABLE IF NOT EXISTS list_items (
             id   TEXT,
-            list_id INTEGER,
+            list_id TEXT,
             title  VARCHAR(255) NOT NULL,
             done INTEGER,
             category_id TEXT,
             FOREIGN KEY (list_id) REFERENCES lists (id),
-            FOREIGN KEY (category) REFERENCES categories (id)
+            FOREIGN KEY (category_id) REFERENCES categories (id)
            )"""
         )
 
@@ -46,35 +46,56 @@ class DB():
         # might need to create db if not there
         conn = sqlite3.connect(db_path)
         self.cursor = conn.cursor()
+        self.conn = conn
 
         # Create table
         self.create_tables()
 
-    def add_list(self, name):
-        item_id = uuid4()
-        res = self.cursor.execute("""INSERT INTO lists (id, name) values (?, ?)""", (item_id, name))
-        self.add_category(item_id, 'default')
+    @staticmethod
+    def new_id():
+        # creates a new uuid4 and returns as a hex string
+        return uuid4().hex
 
-    def add_item(self, list_id, category_id, title):
-        item_id = uuid4()
+    def add_list(self, name):
+        list_id = DB.new_id()
+        res = self.cursor.execute("""INSERT INTO lists (id, name) values (?, ?)""", (list_id, name))
+        self.conn.commit()
+        self.add_category(list_id, 'default')
+        return list_id
+
+    def add_item(self, list_id, title, category_id=None):
+        item_id = DB.new_id()
         res = self.cursor.execute(
         """INSERT INTO list_items (id, list_id, category_id, title, done)
-           values (?, ?, ?, ?)
+           values (?, ?, ?, ?, ?)
         """, (item_id, list_id, category_id, title, False))
+        self.conn.commit()
         # check res
 
     def toggle_checked(self, item_id, done):
         res = self.cursor.execute(
         """UPDATE list_items  SET done=? WHERE item_id=?
         """, (done, item_id))
+        self.conn.commit()
 
     def add_category(self, list_id, name):
-        item_id = uuid4()
+        item_id = DB.new_id()
         res = self.cursor.execute(
         """INSERT INTO categories (id, list_id, name)
-           values (?, ?, ?, ?)
+           values (?, ?, ?)
         """, (item_id, list_id, name))
+        self.conn.commit()
 
-    def get_list(self, name):
-        pass
+    def get_lists(self):
+        res = self.cursor.execute(
+        """SELECT * FROM lists;
+        """)
+        return res.fetchall()
+
+    def get_list_items(self, list_id):
+        res = self.cursor.execute(
+        """SELECT * FROM list_items
+        Where list_id=?
+        """, [list_id])
+        return res.fetchall()
 

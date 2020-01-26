@@ -37,8 +37,9 @@ class ListItem(GObject.GObject):
 
 
 class ShoppingList(GObject.GObject):
-    def __init__(self, name, items=[]):
+    def __init__(self, name, list_id, items=[]):
         GObject.GObject.__init__(self)
+        self.id = list_id
         self.items = Gio.ListStore()
         self.name = name
 
@@ -76,9 +77,17 @@ class ShoppinglistWindow(Gtk.ApplicationWindow):
         print('starting up app')
 
         self.init_lists()
+        try:
+            self.selected_list = self.lists_store.get_item(0).id
+        except:
+            self.selected_list = None
+
+        if self.selected_list:
+            self.change_list(self.selected_list)
 
         self.newlistbtn.connect('clicked', self.on_new_list)
 
+        self.shoppinglist.bind_model(self.list_store, make_list_widget)
         self.lists_listbox.bind_model(self.lists_store, make_lists_widget)
         self.lists_listbox.connect('row_selected', self.handle_list_selected)
         self.lists_listbox.set_selection_mode(Gtk.SelectionMode.BROWSE)
@@ -97,7 +106,8 @@ class ShoppinglistWindow(Gtk.ApplicationWindow):
             input = self.newlist_dialog.get_child().get_children()[0].get_children()[2]
             name = input.get_text()
 
-            self.lists_store.append(ShoppingList(name))
+            list_id = self.db.add_list(name)
+            self.lists_store.append(ShoppingList(name, list_id))
             self.newlist_dialog.hide()
             input.set_text('')
         else:
@@ -109,24 +119,27 @@ class ShoppinglistWindow(Gtk.ApplicationWindow):
             input = self.new_item_dialog.get_child().get_children()[0].get_children()[2]
             name = input.get_text()
 
-            self.get_slist_store().append(ListItem(name))
+            # TODO add category
+            self.db.add_item(self.selected_list, name)
+            self.list_store.append(ListItem(name))
             self.new_item_dialog.hide()
             input.set_text('')
         else:
             self.new_item_dialog.hide()
 
-    def get_slist_store(self):
-        sel_row = self.lists_listbox.get_selected_row()
-        if sel_row:
-            row_index = sel_row.get_index()
-            list = self.lists_store.get_item(row_index)
-            return list.items
-        return None
+
+    def change_list(self, list_id):
+        items = self.db.get_list_items(list_id)
+
+        self.list_store.remove_all()
+        for item in items:
+            self.list_store.append(ListItem(title=item[2], checked=item[3]))
 
     def handle_list_selected(self, listbox, row):
         row_index = row.get_index()
         list = self.lists_store.get_item(row_index)
-        self.shoppinglist.bind_model(list.items, make_list_widget)
+        self.selected_list = list.id
+        self.change_list(list.id)
 
     def on_new_item(self, btn):
         self.new_item_dialog.run()
@@ -137,7 +150,12 @@ class ShoppinglistWindow(Gtk.ApplicationWindow):
 
 
     def init_lists(self):
-        self.lists_store.append(ShoppingList('test'))
+        print('getting lists')
+        res = self.db.get_lists()
+        for row in res:
+            self.lists_store.append(ShoppingList(row[1], row[0]))
+            print(row)
+        # self.lists_store.append(ShoppingList('test'))
 
     def on_new_list(self, btn):
         self.newlist_dialog.run()

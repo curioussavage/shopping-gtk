@@ -42,8 +42,8 @@
             "builddir" : true,
             "sources" : [
                 {
-                    "type" : "git",
-                    "url" : "file:///home/awinn/projects/shopping-gtk"
+                    "type" : "dir",
+                    "path" : "/home/awinn/projects/shopping-gtk"
                 }
             ]
         }
