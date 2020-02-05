@@ -1,6 +1,9 @@
 from gi.repository import Gtk
 from .gi_composites import GtkTemplate
 
+from .db import DB
+
+db = DB()
 
 @GtkTemplate(ui='/org/gnome/Shoppinglist/list_item.ui')
 class ListItem(Gtk.ListBoxRow):
@@ -14,5 +17,13 @@ class ListItem(Gtk.ListBoxRow):
         self.init_template()
         self.item = item
 
+
         markup = '<span size="large"><b>{text}</b></span>'
         self.item_name.set_markup(markup.format(text=self.item.title))
+
+        self.item_checkbox.set_active(item.checked)
+        self.item_checkbox.connect('toggled', self.handle_toggled)
+
+    def handle_toggled(self, btn):
+        done = btn.get_active()
+        db.toggle_checked(self.item.id, done)

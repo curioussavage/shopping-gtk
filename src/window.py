@@ -30,8 +30,9 @@ from .db import DB
 
 
 class ListItem(GObject.GObject):
-    def __init__(self, title, checked=None):
+    def __init__(self, title, item_id, checked=False):
         GObject.GObject.__init__(self)
+        self.id = item_id
         self.title = title
         self.checked = checked
 
@@ -58,11 +59,16 @@ class ShoppinglistWindow(Gtk.ApplicationWindow):
 
     db = DB()
 
+    back_btn = GtkTemplate.Child()
+    stack = GtkTemplate.Child()
+    lists_window = GtkTemplate.Child()
+    list_view_window = GtkTemplate.Child()
+
+
     # TODO use flatpak cli tool to gnereate module for tinydb
     shoppinglist = GtkTemplate.Child()
     lists_listbox = GtkTemplate.Child()
 
-    newlistbtn = GtkTemplate.Child()
     newlist_dialog = GtkTemplate.Child()
 
     new_item_button = GtkTemplate.Child()
@@ -85,7 +91,8 @@ class ShoppinglistWindow(Gtk.ApplicationWindow):
         if self.selected_list:
             self.change_list(self.selected_list)
 
-        self.newlistbtn.connect('clicked', self.on_new_list)
+        self.back_btn.connect('clicked', self.handle_back)
+        self.back_btn.hide() # we are on the lists page here so it should be hidden
 
         self.shoppinglist.bind_model(self.list_store, make_list_widget)
         self.lists_listbox.bind_model(self.lists_store, make_lists_widget)
@@ -120,8 +127,8 @@ class ShoppinglistWindow(Gtk.ApplicationWindow):
             name = input.get_text()
 
             # TODO add category
-            self.db.add_item(self.selected_list, name)
-            self.list_store.append(ListItem(name))
+            item_id = self.db.add_item(self.selected_list, name)
+            self.list_store.append(ListItem(name, item_id))
             self.new_item_dialog.hide()
             input.set_text('')
         else:
@@ -133,16 +140,26 @@ class ShoppinglistWindow(Gtk.ApplicationWindow):
 
         self.list_store.remove_all()
         for item in items:
-            self.list_store.append(ListItem(title=item[2], checked=item[3]))
+            self.list_store.append(ListItem(title=item[2], item_id=item[0], checked=bool(item[3])))
 
     def handle_list_selected(self, listbox, row):
         row_index = row.get_index()
         list = self.lists_store.get_item(row_index)
         self.selected_list = list.id
         self.change_list(list.id)
+        self.stack.set_visible_child(self.list_view_window)
+        self.back_btn.show()
+
+    def handle_back(self, btn):
+        self.stack.set_visible_child(self.lists_window)
+        self.back_btn.hide()
 
     def on_new_item(self, btn):
-        self.new_item_dialog.run()
+        # check stack
+        if self.stack.get_visible_child() == self.lists_window:
+            self.newlist_dialog.run()
+        else:
+            self.new_item_dialog.run()
 
     def lists_listbox_handle_add(self, listModel, position, removed, added):
         row = self.lists_listbox.get_row_at_index(position)
@@ -155,8 +172,5 @@ class ShoppinglistWindow(Gtk.ApplicationWindow):
         for row in res:
             self.lists_store.append(ShoppingList(row[1], row[0]))
             print(row)
-        # self.lists_store.append(ShoppingList('test'))
 
-    def on_new_list(self, btn):
-        self.newlist_dialog.run()
 

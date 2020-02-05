@@ -1,12 +1,13 @@
 from os import path
 
+from gi.repository import GObject
 from gi.repository import GLib
 
 import sqlite3
 from uuid import uuid4
 
 
-class ListModel():
+class ListModel(GObject.GObject):
     pass
    # name = <string>
    # sections = [<name>]
@@ -39,10 +40,16 @@ class DB():
             )""")
         print('res from categories is: ', res)
 
+    __instance = None
+
+    def __new__(cls):
+        if DB.__instance is None:
+            DB.__instance = object.__new__(cls)
+        return DB.__instance
+
     def __init__(self):
         dir = GLib.get_user_data_dir()
         db_path = path.join(dir, 'app.db')
-        print('db path is ', db_path)
         # might need to create db if not there
         conn = sqlite3.connect(db_path)
         self.cursor = conn.cursor()
@@ -70,11 +77,12 @@ class DB():
            values (?, ?, ?, ?, ?)
         """, (item_id, list_id, category_id, title, False))
         self.conn.commit()
-        # check res
+        return item_id
 
+    # @GObject.Signal(arg_types=(str,bool))
     def toggle_checked(self, item_id, done):
         res = self.cursor.execute(
-        """UPDATE list_items  SET done=? WHERE item_id=?
+        """UPDATE list_items  SET done=? WHERE id=?
         """, (done, item_id))
         self.conn.commit()
 
