@@ -4,5 +4,8 @@
     <file>window.ui</file>
     <file>list_item.ui</file>
     <file>list.ui</file>
+    <file>category_list_box.ui</file>
+    <file>input.ui</file>
+    <file>category_editor.ui</file>
   </gresource>
 </gresources>

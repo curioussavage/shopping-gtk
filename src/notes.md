@@ -38,3 +38,5 @@ None of that is tested, just off the top of my head, so sorry if it doesn't quit
 
 ## other notes
 
+consider making the db class just a singleton with the cursor and low level helpers, then put persistence methods and some signals
+that you can listen to on the individual model classes.

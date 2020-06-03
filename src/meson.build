@@ -33,6 +33,10 @@ shoppinglist_sources = [
   'list_item.py',
   'list.py',
   'db.py',
+  'constants.py',
+  'category_list_box.py',
+  'input.py',
+  'category_editor.py',
 ]
 
 install_data(shoppinglist_sources, install_dir: moduledir)

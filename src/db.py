@@ -6,12 +6,33 @@ from gi.repository import GLib
 import sqlite3
 from uuid import uuid4
 
+from .constants import DEFAULT_CATEGORY
 
-class ListModel(GObject.GObject):
-    pass
-   # name = <string>
-   # sections = [<name>]
-   # items = []
+
+class List(GObject.GObject):
+    def __init__(self, id, name):
+        GObject.GObject.__init__(self)
+        self.id = id
+        self.name = name
+
+
+class Category(GObject.GObject):
+    def __init__(self, id, name, list_id):
+        GObject.GObject.__init__(self)
+        self.id = id
+        self.name = name
+        self.list_id = list_id
+
+
+class ListItem(GObject.GObject):
+    def __init__(self, id, list_id, title, checked, category_id):
+        GObject.GObject.__init__(self)
+        self.id = id
+        self.list_id = list_id
+        self.title = title
+        self.checked = checked
+        self.category_id = category_id
+
 
 class DB():
     def create_tables(self):
@@ -50,6 +71,7 @@ class DB():
     def __init__(self):
         dir = GLib.get_user_data_dir()
         db_path = path.join(dir, 'app.db')
+        print('db path is ', db_path)
         # might need to create db if not there
         conn = sqlite3.connect(db_path)
         self.cursor = conn.cursor()
@@ -67,10 +89,13 @@ class DB():
         list_id = DB.new_id()
         res = self.cursor.execute("""INSERT INTO lists (id, name) values (?, ?)""", (list_id, name))
         self.conn.commit()
-        self.add_category(list_id, 'default')
+
+        self.add_category( list_id, 'test')
         return list_id
 
     def add_item(self, list_id, title, category_id=None):
+        if not category_id:
+            category_id = DEFAULT_CATEGORY
         item_id = DB.new_id()
         res = self.cursor.execute(
         """INSERT INTO list_items (id, list_id, category_id, title, done)
@@ -100,10 +125,30 @@ class DB():
         """)
         return res.fetchall()
 
+    def get_list(self, list_id):
+        res = self.cursor.execute(
+        """SELECT * FROM lists WHERE id=?;
+        """, [list_id])
+        res = res.fetchall()[0]
+        return List(res[0], res[1])
+
     def get_list_items(self, list_id):
         res = self.cursor.execute(
         """SELECT * FROM list_items
         Where list_id=?
         """, [list_id])
-        return res.fetchall()
+
+        return [ListItem(item[0], item[1], item[2], item[3], item[4]) for item in res.fetchall()]
+
+    def get_categories(self, list_id):
+        res = self.cursor.execute(
+            """SELECT * FROM categories WHERE list_id=?""",
+            [list_id],
+        )
+        items = res.fetchall()
+        categories = [Category(DEFAULT_CATEGORY, 'default', list_id)]
+        for item in items:
+            categories.append(Category(item[0], item[1], item[2]))
+        return categories
+
 
