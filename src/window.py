@@ -24,13 +24,14 @@ from gi.repository import GLib
 from gi.repository import GObject
 from .gi_composites import GtkTemplate
 
-from .list import List as ListWidget
-from .category_list_box import CategoryListBox
-from .category_editor import CategoryEditor
+from shoppinglist.list import List as ListWidget
+from shoppinglist.category_list_box import CategoryListBox
+from shoppinglist.category_editor import CategoryEditor
+from shoppinglist.input import Input
 
-from .db import DB
+from shoppinglist.db import DB
 
-from .constants import DEFAULT_CATEGORY
+from shoppinglist.constants import DEFAULT_CATEGORY
 
 class ShoppingList(GObject.GObject):
     def __init__(self, name, list_id, items=[]):
@@ -64,12 +65,17 @@ class ShoppinglistWindow(Gtk.ApplicationWindow):
 
     new_item_button = GtkTemplate.Child()
     new_item_dialog = GtkTemplate.Child()
-    #list_menu_popover = GtkTemplate.Child()
+    list_menu_popover = GtkTemplate.Child()
 
     categories_btn = GtkTemplate.Child()
+    toggle_show_checked_btn = GtkTemplate.Child()
 
     shoppinglist_name_label = GtkTemplate.Child()
     shoppinglist_add_btn = GtkTemplate.Child()
+
+    about_btn = GtkTemplate.Child()
+    about_dialog = GtkTemplate.Child()
+    app_menu_popover = GtkTemplate.Child()
 
     list_store = Gio.ListStore()
     lists_store = Gio.ListStore()
@@ -77,6 +83,7 @@ class ShoppinglistWindow(Gtk.ApplicationWindow):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.init_template()
+        self.app = kwargs['application']
 
         self.init_lists()
         try:
@@ -102,13 +109,29 @@ class ShoppinglistWindow(Gtk.ApplicationWindow):
         self.shoppinglist_add_btn.connect('clicked', self.on_new_item)
 
         self.newlist_dialog.connect('response', self.handle_list_dialog_res)
-        self.new_item_dialog.connect('response', self.handle_item_dialog_res)
 
         self.categories_btn.connect('clicked', self.click_categories_btn)
+        self.toggle_show_checked_btn.connect('clicked', self.handle_toggle_show_checked)
+        self.toggle_show_checked_btn.active = self.app._settings.get_value('show-checked')
+        self.about_btn.connect('clicked', self.handle_about_btn_click)
+
+    def handle_about_btn_click(self, w):
+        about_dialog = Gtk.AboutDialog(self)
+        about_dialog.set_program_name('ShoppingList')
+        about_dialog.set_transient_for(self)
+        about_dialog.show()
+        self.app_menu_popover.hide()
+
+
+    def handle_toggle_show_checked(self, w):
+        val = self.app._settings.get_value('show-checked')
+        self.app._settings.set_boolean('show-checked', not val)
+        self.list_menu_popover.hide()
 
     def click_categories_btn(self, btn):
         editor = CategoryEditor(self.selected_list)
         self.category_list_box_container.add(editor)
+        self.list_menu_popover.hide()
         editor.show()
 
 
@@ -123,21 +146,6 @@ class ShoppinglistWindow(Gtk.ApplicationWindow):
             input.set_text('')
         else:
             self.newlist_dialog.hide()
-
-
-    def handle_item_dialog_res(self, dialog, resp):
-        if resp == Gtk.ResponseType.ACCEPT:
-            input = self.new_item_dialog.get_child().get_children()[0].get_children()[2]
-            name = input.get_text()
-
-            # TODO add category
-            item_id = self.db.add_item(self.selected_list, name)
-            self.change_list(self.selected_list) # a hack to make it refresh
-            self.new_item_dialog.hide()
-            input.set_text('')
-        else:
-            self.new_item_dialog.hide()
-
 
     def change_list(self, list_id):
         the_list = self.db.get_list(list_id)
@@ -159,12 +167,32 @@ class ShoppinglistWindow(Gtk.ApplicationWindow):
         self.stack.set_visible_child(self.lists_window)
         self.back_btn.hide()
 
+    def add_item(self, value):
+        item_id = self.db.add_item(self.selected_list, value)
+        self.change_list(self.selected_list) # a hack to make it refresh
+
     def on_new_item(self, btn):
-        # check stack
-        self.new_item_dialog.run()
+        inp = Input()
+        inp.set_placeholder('enter item name')
+        self.category_list_box_container.add(inp)
+        inp.popup()
+        inp.grab_focus()
+        inp.connect('closed', lambda p: self.category_list_box_container.remove(inp))
+        inp.connect('enter_text', lambda _,value: self.add_item(value))
+
+    def add_list(self, value):
+        list_id = self.db.add_list(value)
+        self.lists_store.append(ShoppingList(value, list_id))
 
     def on_new_list(self, btn):
-        self.newlist_dialog.run()
+        inp = Input()
+        inp.set_placeholder('enter List name')
+        self.lists_listbox.add(inp)
+        inp.popup()
+        inp.grab_focus()
+        #inp.grap_default()
+        inp.connect('closed', lambda p: self.lists_listbox.remove(inp))
+        inp.connect('enter_text', lambda _,value: self.add_list(value))
 
     def lists_listbox_handle_add(self, listModel, position, removed, added):
         row = self.lists_listbox.get_row_at_index(position)

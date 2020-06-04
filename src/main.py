@@ -24,19 +24,21 @@ from gi.repository import Gtk, Gio
 
 from .window import ShoppinglistWindow
 
-
 class Application(Gtk.Application):
+    instance = None
     def __init__(self):
         super().__init__(application_id='org.gnome.Shoppinglist',
                          flags=Gio.ApplicationFlags.FLAGS_NONE)
+        self._settings = Gio.Settings.new('org.gnome.Shoppinglist')
+        Application.instance = self
 
     def do_activate(self):
-        win = self.props.active_window
-        if not win:
-            win = ShoppinglistWindow(application=self)
-        win.present()
+        self.win = self.props.active_window
+        if not self.win:
+            self.win = ShoppinglistWindow(application=self)
+        self.win.present()
 
-
+bar = '1234'
 def main(version):
     app = Application()
     return app.run(sys.argv)

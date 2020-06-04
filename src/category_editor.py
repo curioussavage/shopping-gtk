@@ -6,6 +6,8 @@ from .gi_composites import GtkTemplate
 from .db import DB
 from .constants import DEFAULT_CATEGORY
 
+from .category_editor_item import CategoryEditorItem
+
 db = DB()
 
 @GtkTemplate(ui='/org/gnome/Shoppinglist/category_editor.ui')
@@ -54,7 +56,6 @@ class CategoryEditor(Gtk.Popover):
         self.destroy()
 
     def make_list_widget(self, data):
-        x = Gtk.Label()
-        x.set_text(data.name)
+        x = CategoryEditorItem(data)
         x.show()
         return x

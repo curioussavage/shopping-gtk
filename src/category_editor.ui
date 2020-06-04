@@ -3,6 +3,7 @@
 <interface>
   <requires lib="gtk+" version="3.22"/>
   <template class="CategoryEditor" parent="GtkPopover">
+    <property name="height_request">15</property>
     <property name="can_focus">False</property>
     <child>
       <object class="GtkBox">

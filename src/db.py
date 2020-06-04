@@ -90,7 +90,6 @@ class DB():
         res = self.cursor.execute("""INSERT INTO lists (id, name) values (?, ?)""", (list_id, name))
         self.conn.commit()
 
-        self.add_category( list_id, 'test')
         return list_id
 
     def add_item(self, list_id, title, category_id=None):

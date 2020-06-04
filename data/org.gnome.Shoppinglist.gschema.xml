@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schemalist gettext-domain="shoppinglist">
 	<schema id="org.gnome.Shoppinglist" path="/org/gnome/Shoppinglist/">
+      <key type="b" name="show-checked">
+          <default>false</default>
+          <summary>Show checked items</summary>
+          <description>When enabled will show checked items in the lists.</description>
+      </key>
 	</schema>
 </schemalist>

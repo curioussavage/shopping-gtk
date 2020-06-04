@@ -1,19 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Generated with glade 3.22.0 -->
 <interface>
-  <requires lib="gtk+" version="3.22"/>
-  <template class="CategoryListBox" parent="GtkBox">
+  <requires lib="gtk+" version="3.20"/>
+  <template class="CategoryEditorItem" parent="GtkListBoxRow">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
-    <property name="orientation">vertical</property>
+    <property name="activatable">False</property>
+    <property name="selectable">False</property>
     <child>
-      <object class="GtkBox" id="header_box">
+      <object class="GtkBox">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
+        <property name="margin_left">5</property>
+        <property name="margin_right">5</property>
+        <property name="margin_top">5</property>
+        <property name="margin_bottom">5</property>
         <child>
-          <object class="GtkLabel" id="category_label">
+          <object class="GtkLabel" id="category_name">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
+            <property name="halign">start</property>
+            <property name="margin_left">10</property>
+            <property name="hexpand">True</property>
             <property name="label" translatable="yes">label</property>
           </object>
           <packing>
@@ -23,43 +31,25 @@
           </packing>
         </child>
         <child>
-          <object class="GtkButton" id="new_item_button">
+          <object class="GtkButton" id="category_delete_btn">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
-            <property name="tooltip_text" translatable="yes">Add an item to the current list</property>
             <child>
               <object class="GtkImage">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="icon_name">list-add-symbolic</property>
+                <property name="icon_name">edit-delete-symbolic</property>
               </object>
             </child>
           </object>
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
-            <property name="pack_type">end</property>
             <property name="position">1</property>
           </packing>
         </child>
       </object>
-      <packing>
-        <property name="expand">False</property>
-        <property name="fill">True</property>
-        <property name="position">0</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkListBox" id="items_list">
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-      </object>
-      <packing>
-        <property name="expand">False</property>
-        <property name="fill">True</property>
-        <property name="position">1</property>
-      </packing>
     </child>
   </template>
 </interface>

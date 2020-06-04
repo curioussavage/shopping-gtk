@@ -13,8 +13,6 @@ class Input(Gtk.Popover):
         super().__init__(**kwargs)
         self.init_template()
 
-        # self.text_field.connect()
-        self.text_field.grab_focus() # doesn't work
 
         self.text_field.connect('activate', self.handle_text_enter)
 
