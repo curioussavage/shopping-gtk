@@ -13,7 +13,6 @@ class List(Gtk.ListBoxRow):
         self.init_template()
         self.list = list
 
-        #import ipdb; ipdb.set_trace()
         markup = '<span size="large"><b>{text}</b></span>'
         self.list_name.set_markup(markup.format(text=self.list.name))
         
