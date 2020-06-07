@@ -38,6 +38,7 @@ shoppinglist_sources = [
   'input.py',
   'category_editor.py',
   'category_editor_item.py',
+  'dialog_input.py',
 ]
 
 install_data(shoppinglist_sources, install_dir: moduledir)

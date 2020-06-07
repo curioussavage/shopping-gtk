@@ -18,7 +18,7 @@ class ListItem(Gtk.ListBoxRow):
         self.item = item
 
 
-        markup = '<span size="large"><b>{text}</b></span>'
+        markup = '<span size="medium">{text}</span>'
         self.item_name.set_markup(markup.format(text=self.item.title))
 
         self.item_checkbox.set_active(item.checked)

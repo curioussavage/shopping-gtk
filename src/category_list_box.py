@@ -2,13 +2,11 @@ from gi.repository import Gtk
 from gi.repository import Gio
 from .gi_composites import GtkTemplate
 
-from .db import DB
+from shoppinglist.db import DB
+from shoppinglist.constants import DEFAULT_CATEGORY
 
-from .list_item import ListItem as ListItemWidget
-
-from .constants import DEFAULT_CATEGORY
-
-from shoppinglist.input import Input
+from shoppinglist.dialog_input import DialogInput
+from shoppinglist.list_item import ListItem as ListItemWidget
 
 db = DB()
 
@@ -30,6 +28,7 @@ class CategoryListBox(Gtk.Box):
         self.init_template()
         self.category = category
         self.list_store = Gio.ListStore()
+        self.win = Application.instance.win
         self.settings = Application.instance._settings
 
         if category.id == DEFAULT_CATEGORY:
@@ -70,13 +69,10 @@ class CategoryListBox(Gtk.Box):
         self.load_data()
 
     def handle_new_item(self, btn):
-        inp = Input()
-        inp.set_placeholder('enter item name')
-        self.add(inp)
-        inp.popup()
-        inp.grab_focus()
-        inp.connect('closed', lambda p: self.remove(inp))
-        inp.connect('enter_text', lambda _,value: self.persist_and_reload(value))
+        dialog = DialogInput(self.win)
+        dialog.connect('enter_text', lambda _, val: self.persist_and_reload(val))
+        dialog.set_placeholder("list name")
+        dialog.show_all()
 
     @staticmethod
     def make_list_widget(data):

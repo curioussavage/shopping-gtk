@@ -28,6 +28,7 @@ from shoppinglist.list import List as ListWidget
 from shoppinglist.category_list_box import CategoryListBox
 from shoppinglist.category_editor import CategoryEditor
 from shoppinglist.input import Input
+from shoppinglist.dialog_input import DialogInput
 
 from shoppinglist.db import DB
 
@@ -61,10 +62,7 @@ class ShoppinglistWindow(Gtk.ApplicationWindow):
     category_list_box_container = GtkTemplate.Child()
     lists_listbox = GtkTemplate.Child()
 
-    newlist_dialog = GtkTemplate.Child()
-
     new_item_button = GtkTemplate.Child()
-    new_item_dialog = GtkTemplate.Child()
     list_menu_popover = GtkTemplate.Child()
 
     categories_btn = GtkTemplate.Child()
@@ -74,7 +72,6 @@ class ShoppinglistWindow(Gtk.ApplicationWindow):
     shoppinglist_add_btn = GtkTemplate.Child()
 
     about_btn = GtkTemplate.Child()
-    about_dialog = GtkTemplate.Child()
     app_menu_popover = GtkTemplate.Child()
 
     list_store = Gio.ListStore()
@@ -108,7 +105,6 @@ class ShoppinglistWindow(Gtk.ApplicationWindow):
         self.new_item_button.connect('clicked', self.on_new_list)
         self.shoppinglist_add_btn.connect('clicked', self.on_new_item)
 
-        self.newlist_dialog.connect('response', self.handle_list_dialog_res)
 
         self.categories_btn.connect('clicked', self.click_categories_btn)
         self.toggle_show_checked_btn.connect('clicked', self.handle_toggle_show_checked)
@@ -172,27 +168,20 @@ class ShoppinglistWindow(Gtk.ApplicationWindow):
         self.change_list(self.selected_list) # a hack to make it refresh
 
     def on_new_item(self, btn):
-        inp = Input()
-        inp.set_placeholder('enter item name')
-        self.category_list_box_container.add(inp)
-        inp.popup()
-        inp.grab_focus()
-        inp.connect('closed', lambda p: self.category_list_box_container.remove(inp))
-        inp.connect('enter_text', lambda _,value: self.add_item(value))
+        dialog = DialogInput(self)
+        dialog.connect('enter_text', lambda _,value: self.add_item(value))
+        dialog.set_placeholder("item name")
+        dialog.show_all()
 
     def add_list(self, value):
         list_id = self.db.add_list(value)
         self.lists_store.append(ShoppingList(value, list_id))
 
     def on_new_list(self, btn):
-        inp = Input()
-        inp.set_placeholder('enter List name')
-        self.lists_listbox.add(inp)
-        inp.popup()
-        inp.grab_focus()
-        #inp.grap_default()
-        inp.connect('closed', lambda p: self.lists_listbox.remove(inp))
-        inp.connect('enter_text', lambda _,value: self.add_list(value))
+        dialog = DialogInput(self)
+        dialog.connect('enter_text', lambda _, val: self.add_list(val))
+        dialog.set_placeholder("list name")
+        dialog.show_all()
 
     def lists_listbox_handle_add(self, listModel, position, removed, added):
         row = self.lists_listbox.get_row_at_index(position)

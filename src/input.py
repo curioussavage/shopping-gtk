@@ -14,6 +14,7 @@ class Input(Gtk.Popover):
         self.init_template()
 
 
+        self.set_default_widget(self.text_field)
         self.text_field.connect('activate', self.handle_text_enter)
 
     def handle_text_enter(self, text_field):

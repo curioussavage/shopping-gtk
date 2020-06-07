@@ -8,5 +8,6 @@
     <file>input.ui</file>
     <file>category_editor.ui</file>
     <file>category_editor_item.ui</file>
+    <file>dialog_input.ui</file>
   </gresource>
 </gresources>
