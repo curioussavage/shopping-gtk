@@ -127,19 +127,6 @@ class ShoppinglistWindow(Gtk.ApplicationWindow):
         self.list_menu_popover.hide()
         editor.show()
 
-
-    def handle_list_dialog_res(self, dialog, resp):
-        if resp == Gtk.ResponseType.ACCEPT:
-            input = self.newlist_dialog.get_child().get_children()[0].get_children()[2]
-            name = input.get_text()
-
-            list_id = self.db.add_list(name)
-            self.lists_store.append(ShoppingList(name, list_id))
-            self.newlist_dialog.hide()
-            input.set_text('')
-        else:
-            self.newlist_dialog.hide()
-
     def change_list(self, list_id):
         the_list = self.db.get_list(list_id)
         categories = self.db.get_categories(list_id)
