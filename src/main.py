@@ -23,7 +23,10 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gio
 
 from .window import ShoppinglistWindow
+from shoppinglist.actions import actions
+from shoppinglist.db import DB
 
+db = DB()
 class Application(Gtk.Application):
     instance = None
     def __init__(self):
@@ -38,7 +41,47 @@ class Application(Gtk.Application):
             self.win = ShoppinglistWindow(application=self)
         self.win.present()
 
-bar = '1234'
+    def do_startup(self, **kwargs):
+        Gtk.Application.do_startup(self)
+        try:
+            for action in actions:
+                self.add_action(action)
+                handler = action.get_name() + '_cb'
+                action.connect('activate', getattr(self, handler))
+        except:
+            pass
+
+    def about_cb(self, action, param):
+        about_dialog = Gtk.AboutDialog(self)
+        about_dialog.set_program_name('ShoppingList')
+        about_dialog.set_transient_for(self.win)
+        about_dialog.show()
+
+    def toggle_item_checked_cb(self, action, param):
+        pass
+
+    def add_list_cb(self, action, param):
+
+        pass
+
+    def delete_list_cb(self, action, param):
+        pass
+
+    def add_category_cb(self, action, param):
+        pass
+
+    def delete_category_cb(self, action, param):
+        pass
+
+    def add_item_cb(self, action, param):
+        pass
+
+    def delete_item_cb(self, action, param):
+        pass
+
+    def toggle_item_checked_cb(self, action, param):
+        pass
+
 def main(version):
     app = Application()
     return app.run(sys.argv)

@@ -112,10 +112,7 @@ class ShoppinglistWindow(Gtk.ApplicationWindow):
         self.about_btn.connect('clicked', self.handle_about_btn_click)
 
     def handle_about_btn_click(self, w):
-        about_dialog = Gtk.AboutDialog(self)
-        about_dialog.set_program_name('ShoppingList')
-        about_dialog.set_transient_for(self)
-        about_dialog.show()
+        res = self.app.activate_action('about', None)
         self.app_menu_popover.hide()
 
 
