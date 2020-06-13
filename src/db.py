@@ -10,10 +10,20 @@ from .constants import DEFAULT_CATEGORY
 
 
 class List(GObject.GObject):
+    __gsignals__ = {
+        # signature here is: flag, return type, params
+        'created': (GObject.SignalFlags.RUN_LAST, None, (str,)),
+    }
+
     def __init__(self, id, name):
         GObject.GObject.__init__(self)
         self.id = id
         self.name = name
+
+    @staticmethod
+    def create(name):
+        list = List()
+
 
 
 class Category(GObject.GObject):

@@ -61,6 +61,7 @@ class Application(Gtk.Application):
         pass
 
     def add_list_cb(self, action, param):
+        # maybe I should move persistance to app models and then fire a signal on them that widgets can connect to after changes.
 
         pass
 

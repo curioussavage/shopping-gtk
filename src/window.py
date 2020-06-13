@@ -27,7 +27,6 @@ from .gi_composites import GtkTemplate
 from shoppinglist.list import List as ListWidget
 from shoppinglist.category_list_box import CategoryListBox
 from shoppinglist.category_editor import CategoryEditor
-from shoppinglist.input import Input
 from shoppinglist.dialog_input import DialogInput
 
 from shoppinglist.db import DB
@@ -158,6 +157,10 @@ class ShoppinglistWindow(Gtk.ApplicationWindow):
         dialog.show_all()
 
     def add_list(self, value):
+        action = self.app.lookup_action('add_list')
+        import pdb; pdb.set_trace()
+        self.app.activate_action('add_list', value) # change param to Variant
+        #action.connect_after('activate', lambda action, param: <update crap>)
         list_id = self.db.add_list(value)
         self.lists_store.append(ShoppingList(value, list_id))
 
